@@ -1,9 +1,13 @@
+require './app/representers/books_representer.rb'
+
 module Api
   module V1
     class BooksController < ApplicationController
       #Created with rails g controller...  
       def index
-        render json: Book.all
+        books= Book.all
+        render json: BooksRepresenter.new(books).as_json
+        #render json: Book.all
       end
 
       #Create book
