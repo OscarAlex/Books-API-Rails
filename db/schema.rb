@@ -22,7 +22,6 @@ ActiveRecord::Schema.define(version: 2021_08_31_152350) do
 
   create_table "books", force: :cascade do |t|
     t.string "title"
-    #author column was removed
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.integer "author_id"
