@@ -3,9 +3,14 @@ require './app/representers/books_representer.rb'
 module Api
   module V1
     class BooksController < ApplicationController
+      #Variables
+      MAX_PAGINATION_LIMIT= 100
+
       #Created with rails g controller...  
       def index
-        books= Book.all
+        #Pagination
+        #books= Book.all
+        books= Book.limit(limit).offset(params[:offset])
         #Representer to format the response
         render json: BooksRepresenter.new(books).as_json
         #render json: Book.all
@@ -43,16 +48,24 @@ module Api
         head :no_content
       end
 
-      #This allows only these parameters to be posted
+      
       #Security reasons
       private
-
+      #This allows only these parameters to be posted
       def author_params
         params.require(:author).permit(:first_name, :last_name, :age)
       end
 
       def book_params
         params.require(:book).permit(:title)
+      end
+
+      def limit
+        #We use fetch because 100 is returned by default
+        [
+          params.fetch(:limit, MAX_PAGINATION_LIMIT).to_i, 
+          MAX_PAGINATION_LIMIT
+        ].min
       end
     end
   end

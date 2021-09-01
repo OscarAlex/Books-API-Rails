@@ -1,5 +1,7 @@
+#response_body from rails_helper from request_helper
 require 'rails_helper'
 
+#Unit tests
 describe 'Books API', type: :request do
     #Create authors
     let(:author1) {FactoryBot.create(:author, first_name:'F1', last_name:'L1', age:12)}
@@ -20,6 +22,7 @@ describe 'Books API', type: :request do
             expect(response).to have_http_status(:success)
             #Check the number of books
             expect(response_body.size).to eq(2)
+            #Check if the body content is
             expect(response_body).to eq(
                 [
                     {
@@ -28,6 +31,48 @@ describe 'Books API', type: :request do
                         "author_name" => 'F1 L1',
                         "author_age" => 12
                     },
+                    {
+                        "id" => 2,
+                        "title" => 'TBook2',
+                        "author_name" => 'F2 L2',
+                        "author_age" => 13
+                    }
+                ]
+            )
+        end
+
+        #Pagination= It is used to return a subset of books instead of all
+        #of them. In case of a larger database, it helps a lot.
+        it 'returns a subset of books based on limit' do
+            get '/api/v1/books', params: {limit:1}
+
+            #Check the response
+            expect(response).to have_http_status(:success)
+            #Check the number of books
+            expect(response_body.size).to eq(1)
+            expect(response_body).to eq(
+                [
+                    {
+                        "id" => 1,
+                        "title" => 'TBook1',
+                        "author_name" => 'F1 L1',
+                        "author_age" => 12
+                    }
+                ]
+            )
+        end
+
+        it 'returns a subset of books based on limit and offset' do
+            get '/api/v1/books', params: {limit:1, offset:1}
+
+            #Check the response
+            expect(response).to have_http_status(:success)
+            #Check the number of books
+            expect(response_body.size).to eq(1)
+            #The response should be the second book because the data was
+            #splitted in a 1 object chunck (limit) and we get the position 1 (offset)
+            expect(response_body).to eq(
+                [
                     {
                         "id" => 2,
                         "title" => 'TBook2',
@@ -54,9 +99,11 @@ describe 'Books API', type: :request do
             #Check if the test database change from 0 to 1
             }.to change{ Book.count }.from(0).to(1)
             
+            #Check the number of authors
             expect(Author.count).to eq(1)
             expect(response).to have_http_status(:created)
-            expect(JSON.parse(response.body)).to eq(
+            #Check the response of the JSON body
+            expect(response_body).to eq(
                 {
                     "id" => 1,
                     "title" => 'The martian',
@@ -69,7 +116,6 @@ describe 'Books API', type: :request do
 
     describe 'DELETE /books/:id' do
         #Add test data
-        #a1= FactoryBot.create(:author, first_name:'D1', last_name:'D1', age:12)
         let!(:book) {FactoryBot.create(:book, title:'TBook1', author:author1)}
 
         it 'deletes a book' do
